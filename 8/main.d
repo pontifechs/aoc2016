@@ -4,13 +4,11 @@ import std.stdio;
 import std.algorithm;
 import std.array;
 import std.range;
+import std.file;
+import std.conv;
 
 
-void main()
-{
-  puzzle1();
-  puzzle2();
-}
+
 
 
 
@@ -60,7 +58,7 @@ struct Screen
 
   void rotateColumn(int col, int dist)
   {
-    auto currentColumn = pixels[dist..$].stride(WIDTH).array;
+    auto currentColumn = pixels[col..$].stride(WIDTH).array;
     // rotate
     currentColumn[dist..$].bringToFront(currentColumn[0..dist]);
 
@@ -70,7 +68,7 @@ struct Screen
 
   string toString()
   {
-    string ret = "";
+    string ret = "|----+----|----+----|----+----|----+----|----+----\n";
     for (int y = 0; y < HEIGHT; ++y)
     {
       for (int x = 0; x < WIDTH; ++x)
@@ -88,6 +86,19 @@ struct Screen
     }
     ret ~= "\n";
     return ret;
+  }
+
+  int population()
+  {
+    int pop = 0;
+    foreach (pixel; pixels)
+    {
+      if (pixel)
+      {
+        pop++;
+      }
+    }
+    return pop;
   }
 
 private:
@@ -111,25 +122,57 @@ private:
       pixels[ind(col, y)] = contents[y];
     }
   }
+}
 
+void main()
+{
+  puzzle1();
+  puzzle2();
 }
 
 
 void puzzle1()
 {
+
   auto screen = Screen();
-  writeln(screen);
-  screen.rect(3, 2);
-  writeln(screen);
-  screen.rotateColumn(1, 1);
-  writeln(screen);
-  screen.rotateRow(0, 4);
-  writeln(screen);
-  screen.rotateColumn(1, 1);
-  writeln(screen);
+
+  auto instructions = readText("input").split('\n');
+  foreach(instruction; instructions)
+  {
+    auto split = instruction.split(' ');
+    // Rect
+    if (split.length == 2)
+    {
+      auto args = split[1].split('x');
+      screen.rect(args[0].to!int, args[1].to!int);
+    }
+    // Rotate
+    else if (split.length == 5)
+    {
+      auto direction = split[1];
+      auto target = split[2].split('=')[1].to!int;
+      auto distance = split[4].to!int;
+
+      if (direction == "row")
+      {
+        screen.rotateRow(target, distance);
+      }
+      else
+      {
+        screen.rotateColumn(target, distance);
+      }
+    }
+    writeln(instruction);
+    writeln(screen);
+    //readln();
+  }
+
+  writeln(screen.population);
+
+
+
 }
 
 void puzzle2()
 {
-  
 }
